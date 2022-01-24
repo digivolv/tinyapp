@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/digivolv/tinyapp/issues"
   },
-  "homepage": "https://github.com/digivolv/tinyapp#readme"
+  "homepage": "https://github.com/digivolv/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.2"
+  }
 }
