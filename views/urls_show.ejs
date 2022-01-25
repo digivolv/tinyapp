@@ -21,8 +21,18 @@
         </h5>
         <p class="card-text">
           Short URL: <a href="/urls/<%= shortURL %>"><%= shortURL %></a>
+
         </p>
       </div>
+      <form class="form-inline" action="/urls/<%= shortURL %>/" method="POST">
+        <div class="card-body">
+        <label for="longURL"><h6>Enter updated URL</h6></label>
+        <input
+        name="longURL"
+        placeholder="http://"
+        />
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
       <div class="card-footer text-muted"></div>
     </div>
     <!-- Bootstrap JS -->
