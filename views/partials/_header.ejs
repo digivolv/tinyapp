@@ -1,5 +1,4 @@
 <header>
-  <!-- <h2> Welcome, <%= username %> </h2> -->
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
     <a class="navbar-brand" href="/urls">TinyApp</a>
     <button
@@ -21,15 +20,15 @@
     </div>
 
 
-    <% if (!username) { %>
-    <form class="form-inline" action="/login" method="POST">
+    <% if (!user) { %>
+    <form class="form-inline" action="/login" method="GET">
       <div class="navbar">
       <a class="nav-item nav-link" >Login for full access =></a>
-      <input
+      <!-- <input
       id="username"
       name="username"
       placeholder="username"
-      />
+      /> -->
       <button type="submit" class="btn btn-light">Login</button>
     </form>
     <form class="form-inline" action="/register" method="GET">
@@ -38,7 +37,7 @@
     </form>
   <% } else { %>
     <form class="form-inline" action="/logout" method="POST">
-      <label for="logout"><p>Logged in as: <strong><%= username %></strong></p></label>
+      <label for="logout"><p>Logged in as: <strong><%= user.email %></strong></p></label>
       <div class="navbar">
       <button type="submit" class="btn btn-primary">Log out</button>
     </form>
