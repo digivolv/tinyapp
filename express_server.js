@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const users = require("./data/users.json");
+const urlDatabase = require("./data/urlDatabase.json");
 app.use(bodyParser.urlencoded({ extended: true }));
 const PORT = 8081;
 
@@ -12,10 +13,6 @@ app.use(cookieParser());
 app.set("view engine", "ejs");
 
 //ROUTE DEFINITIONS
-const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
-};
 
 // const users = {
 //   userRandomID: {
@@ -51,6 +48,9 @@ function checkIfEmailExists(inputEmail) {
   return false;
 }
 
+app.get("/", (req, res) => {
+  res.redirect("/urls/");
+});
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -66,7 +66,10 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: users[req.cookies["user"]] };
+  if (!users[req.cookies["user"]]) {
+    res.redirect("/login");
+  }
+  const templateVars = { user: users[req.cookies["user"]] };
   res.render("urls_new", templateVars);
 });
 
@@ -74,7 +77,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user"]],
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL].longURL,
   };
   res.render("urls_show", templateVars);
 });
@@ -87,17 +90,18 @@ app.post("/urls/:shortURL/", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
+  //if no corresponding shortURL to longURL throw error
   if (!longURL) {
     res.send("404: Key not found!");
   }
-  res.redirect(longURL);
+  // res.redirect(longURL);
 });
 
 app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user"]],
-    shortURL: req.params.shortURL,
+    // shortURL: req.params.shortURL,
   };
 
   res.render("register", templateVars);
