@@ -14,30 +14,34 @@
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
-
-    <title>New URL - TinyApp Example</title>
+    <title>TinyApp</title>
   </head>
-
   <body>
-    <%- include('partials/_header') %>
+    <header><%- include('partials/_header') %></header>
+    <form action="/register" method="POST">
+      <div>
+        <label for="firstName">First Name</label>
+        <input id="firstName" name="firstName" type="text" required />
+      </div>
+      <div>
+        <label for="lastName">Last Name</label>
+        <input id="lastName" name="lastName" type="text" required />
+      </div>
+      <div>
+        <label for="Username">Username</label>
+        <input id="Username" name="Username" type="text" required />
+      </div>
+      <div>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required />
+      </div>
+      <div>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required />
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
 
-    <main style="margin: 1em">
-      <h3>Create TinyURL</h3>
-      <form class="form-inline" action="/urls/" method="POST">
-        <div class="form-group mb-2">
-          <label for="longURL">Enter a URL:</label>
-          <input
-            class="form-control"
-            type="text"
-            name="longURL"
-            placeholder="http://"
-            style="width: 300px; margin: 1em"
-          />
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
-      </form>
-    </main>
-    <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"

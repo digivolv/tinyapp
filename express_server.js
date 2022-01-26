@@ -15,6 +15,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 function generateRandomString() {
   let result = "";
   let characters =
@@ -47,6 +60,31 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.post("/register", (req, res) => {
+  // console.log("entering this endpoint");
+  // console.log(req.body.id);
+  // console.log(req.body.password);
+  // console.log(req.body.email);
+  let userID = generateRandomString();
+
+  users[userID] = {
+    username: req.body.username,
+    firstName: req.body.firstName,
+    email: req.body.email,
+    password: req.body.password,
+  };
+  res.cookie(userID, "username");
+  res.redirect("/urls");
+});
+
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"],
+    shortURL: req.params.shortURL,
+  };
+
+  res.render("register", templateVars);
+});
 //Update your express server so that when it receives a POST request to /urls
 // it responds with a redirection to /urls/:shortURL, where shortURL is the random string we generated.
 
@@ -62,7 +100,6 @@ app.post("/urls", (req, res) => {
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
   // console.log(req.body.username);
-
   // console.log(username);
   res.redirect(`/urls`);
 });
