@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 const users = require("./data/users.json");
 const urlDatabase = require("./data/urlDatabase.json");
 app.use(bodyParser.urlencoded({ extended: true }));
-const PORT = 8081;
+const PORT = 8082;
 
 // console.log(users);
 //./node_modules/.bin/nodemon -L express_server.js//
@@ -56,12 +56,17 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     user: users[req.cookies["user"]],
   };
+  // console.log("user, ", templateVars.user);
   res.render("urls_index", templateVars);
 });
 
 app.post("/urls", (req, res) => {
-  let newShortURL = generateRandomString();
-  urlDatabase[newShortURL] = req.body.longURL;
+  const newShortURL = generateRandomString();
+  urlDatabase[newShortURL] = {
+    longURL: req.body.longURL,
+    user_id: users[req.cookies["user"]].user_id,
+  };
+  // console.log(urlDatabase);
   res.redirect(`/urls/${newShortURL}`);
 });
 
@@ -85,7 +90,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/", (req, res) => {
   // console.log(urlDatabase[req.params.shortURL]);
   // console.log("req.body: ", req.body);
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   res.redirect(`/urls/${req.params.shortURL}`);
 });
 
@@ -120,7 +125,7 @@ app.post("/register", (req, res) => {
   }
   let user_id = generateRandomString();
   users[user_id] = {
-    id: user_id,
+    user_id: user_id,
     firstName: req.body.firstName,
     email: req.body.email,
     password: req.body.password,
