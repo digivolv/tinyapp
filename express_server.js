@@ -2,11 +2,35 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const users = require("./data/users.json");
+// const users = require("./data/users.json");
 const urlDatabase = require("./data/urlDatabase.json");
-app.use(bodyParser.urlencoded({ extended: true }));
 const morgan = require("morgan");
+const bcrypt = require("bcryptjs");
+const salt = bcrypt.genSaltSync(10);
+// const hashedPassword = brypt.hashSync(password, salt);
+
+const users = {
+  userRandomID: {
+    user_id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    user_id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+  123123: {
+    user_id: "123123",
+    email: "edwin@gmail.com",
+    password: bcrypt.hashSync("123", salt),
+  },
+};
+
 const PORT = 8888;
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan("default"));
 
 // console.log(users);
 //./node_modules/.bin/nodemon -L express_server.js//
@@ -172,12 +196,13 @@ app.post("/register", (req, res) => {
       "400 Email has already been previously registered with another account"
     );
   }
+  let hashedPassword = bcrypt.hashSync(req.body.password, salt);
   let user_id = generateRandomString();
   users[user_id] = {
     user_id: user_id,
     firstName: req.body.firstName,
     email: req.body.email,
-    password: req.body.password,
+    password: hashedPassword,
   };
   console.log(users);
   res.cookie("user", user_id);
@@ -197,10 +222,10 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   // console.log(req.body.email);
   let user_id = checkIfEmailExists(req.body.email);
-
+  let hashedPassword = bcrypt.hashSync(req.body.password, salt);
   // console.log("req.body.password,", req.body.password);
   // console.log("user.password,", user_id.password);
-  if (users[user_id].password === req.body.password) {
+  if (bcrypt.hashSync("users[user_id].password", hashedPassword)) {
     // console.log("user:", user);
     res.cookie("user", user_id);
   } else if (!checkIfEmailExists(req.body.email)) {
