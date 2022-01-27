@@ -31,13 +31,12 @@
         </thead>
 
         <tbody>
-          <% for(let url in userURLs) { %>
+          <% for(let url in urls) { %>
           <tr>
+            <% if (user && user.user_id === urls[url].user_id ) { %>
             <td><a href="/urls/<%= url %>"><%= url %></a></td>
             <td>
-              <a href="<%= userURLs[url].longURL %>"
-                ><%= userURLs[url].longURL %></a
-              >
+              <a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a>
             </td>
             <td>
               <form method="GET" action="/urls/<%= url %>">
@@ -50,7 +49,7 @@
               </form>
             </td>
           </tr>
-          <% } %> <% if (!user) { %>
+          <% } %> <% } %> <% if (!user) { %>
           <td>
             <form class="form-inline" action="/login" method="GET">
               <div>

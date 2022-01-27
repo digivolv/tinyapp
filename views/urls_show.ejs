@@ -17,7 +17,7 @@
       <div class="card-header"></div>
       <div class="card-body">
         <h5 class="card-title">
-          TinyURL for: <a href="<%= longURL %>"><%= longURL %></a>
+          TinyURL for: <a href="/urls/<%= urls[shortURL].user_id %>"><%= urls[shortURL].longURL %></a>
         </h5>
         <p class="card-text">
           Short URL: <a href="/urls/<%= shortURL %>"><%= shortURL %></a>

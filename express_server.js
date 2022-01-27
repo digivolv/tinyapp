@@ -5,12 +5,14 @@ const cookieParser = require("cookie-parser");
 const users = require("./data/users.json");
 const urlDatabase = require("./data/urlDatabase.json");
 app.use(bodyParser.urlencoded({ extended: true }));
-const PORT = 8082;
+const morgan = require("morgan");
+const PORT = 8888;
 
 // console.log(users);
 //./node_modules/.bin/nodemon -L express_server.js//
 app.use(cookieParser());
 app.set("view engine", "ejs");
+morgan("tiny");
 
 //ROUTE DEFINITIONS
 
@@ -48,15 +50,30 @@ function checkIfEmailExists(inputEmail) {
   return false;
 }
 
+function urlsForUser(id) {
+  let resultURLs = {};
+  for (url in urlDatabase) {
+    if (id === urlDatabase[url].user_id) {
+      resultURLs[url] = urlDatabase[url];
+    }
+  }
+  return resultURLs;
+}
+
 app.get("/", (req, res) => {
   res.redirect("/urls/");
 });
+
 app.get("/urls", (req, res) => {
+  let userURLs = urlsForUser(req.cookies["user"]);
   const templateVars = {
-    urls: urlDatabase,
+    // urls: urlDatabase, // removed in favor of userURLs
     user: users[req.cookies["user"]],
+    userURLs: userURLs,
   };
-  // console.log("user, ", templateVars.user);
+  // console.log("userURLs", templateVars.userURLs);
+  // console.log(userURLs);
+  // console.log("(templateVars.urls", templateVars.urls);
   res.render("urls_index", templateVars);
 });
 
@@ -79,28 +96,45 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["user"]],
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-  };
-  res.render("urls_show", templateVars);
+  //only load if there if shortURL exists in urlDatabase
+  if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
+    const templateVars = {
+      user: users[req.cookies["user"]],
+      shortURL: req.params.shortURL,
+      longURL: urlDatabase[req.params.shortURL].longURL,
+      urls: urlDatabase,
+    };
+    res.render("urls_show", templateVars);
+  } else {
+    res.send("400: Invalid file path! Not a valid shortURL ");
+  }
 });
 
 app.post("/urls/:shortURL/", (req, res) => {
   // console.log(urlDatabase[req.params.shortURL]);
   // console.log("req.body: ", req.body);
-  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-  res.redirect(`/urls/${req.params.shortURL}`);
+  for (url in urlDatabase) {
+    // console.log("url,,", urlDatabase[url].user_id);
+    // console.log("req.cookies", req.cookies["user"]);
+    if (urlDatabase[req.params.shortURL].user_id === req.cookies["user"]) {
+      urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+      res.redirect(`/urls/${req.params.shortURL}`);
+    }
+  }
+  res.send(
+    "403 Error, you do not possess authority to edit this! Please login and try again"
+  );
 });
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
   //if no corresponding shortURL to longURL throw error
+
+  //************************* not sure if needed */
   if (!longURL) {
-    res.send("404: Key not found!");
+    res.send("400: Key not found!");
   }
-  // res.redirect(longURL);
+  res.render("urls_show");
 });
 
 app.get("/register", (req, res) => {
@@ -117,11 +151,9 @@ app.post("/register", (req, res) => {
     res.sendStatus(400).send("All input fields required");
   }
   if (checkIfEmailExists(req.body.email)) {
-    res
-      .sendStatus(400)
-      .send(
-        "Email has already been previously registered with another account"
-      );
+    res.send(
+      "400 Email has already been previously registered with another account"
+    );
   }
   let user_id = generateRandomString();
   users[user_id] = {
@@ -155,7 +187,7 @@ app.post("/login", (req, res) => {
     // console.log("user:", user);
     res.cookie("user", user_id);
   } else if (!checkIfEmailExists(req.body.email)) {
-    res.sendStatus(403).send("Email is not found");
+    res.send("403 Email is not found");
   }
   // res.cookie("user", req.body.user);
   res.redirect(`/urls`);
@@ -167,8 +199,18 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  //search url database to make sure it matches person logged in (cookie)
+  for (url in urlDatabase) {
+    // console.log("url,,", urlDatabase[url].user_id);
+    // console.log("req.cookies", req.cookies["user"]);
+    if (urlDatabase[url].user_id === req.cookies["user"]) {
+      delete urlDatabase[req.params.shortURL];
+      res.redirect("/urls");
+    }
+  }
+  res.send(
+    "403 Error, you do not possess authority to delete this! Please login and try again"
+  );
 });
 
 // app.get("/urls.json", (req, res) => {
