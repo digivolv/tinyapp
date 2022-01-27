@@ -1,13 +1,55 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 // const users = require("./data/users.json");
 const urlDatabase = require("./data/urlDatabase.json");
 const morgan = require("morgan");
 const bcrypt = require("bcryptjs");
 const salt = bcrypt.genSaltSync(10);
+const { getUserByEmail, generateRandomString } = require("./helpers");
+// const getUserByEmail = require("./helpers");
+// const generateRandomString = require("./helpers");
+
 // const hashedPassword = brypt.hashSync(password, salt);
+
+// //returns user ID if email exists
+// const getUserByEmail = function (email, database) {
+//   for (const user in users) {
+//     if (email === database[user].email) {
+//       return user;
+//     }
+//   }
+//   return null;
+// };
+// //generates random string for user_id creation
+// const generateRandomString = function () {
+//   let result = "";
+//   let characters =
+//     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+//   for (let i = 0; i < 6; i++) {
+//     result += characters.charAt(Math.floor(Math.random() * characters.length));
+//   }
+//   return result;
+// };
+
+const PORT = 8888;
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan("tiny"));
+app.use(
+  cookieSession({
+    usename: "session",
+    keys: [
+      "861a4ba3-7bfe-420a-9ce2-a49a25c61645",
+      "4e32a74a-b55b-4a50-a8cc-6384ce6a5dfc",
+    ],
+  })
+);
+//./node_modules/.bin/nodemon -L express_server.js//
+// app.use(cookieParser());
+app.set("view engine", "ejs");
 
 const users = {
   userRandomID: {
@@ -27,17 +69,6 @@ const users = {
   },
 };
 
-const PORT = 8888;
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(morgan("default"));
-
-// console.log(users);
-//./node_modules/.bin/nodemon -L express_server.js//
-app.use(cookieParser());
-app.set("view engine", "ejs");
-morgan("tiny");
-
 //ROUTE DEFINITIONS
 
 // const users = {
@@ -52,27 +83,6 @@ morgan("tiny");
 //     password: "dishwasher-funk",
 //   },
 // };
-
-function generateRandomString() {
-  let result = "";
-  let characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-}
-// users[req.cookies["user"]].email,
-
-//returns user ID if email exists
-function checkIfEmailExists(inputEmail) {
-  for (const user in users) {
-    if (inputEmail === users[user].email) {
-      return user;
-    }
-  }
-  return false;
-}
 
 function urlsForUser(id) {
   let resultURLs = {};
@@ -89,10 +99,10 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let userURLs = urlsForUser(req.cookies["user"]);
+  let userURLs = urlsForUser(req.session.user_id);
   const templateVars = {
     // urls: urlDatabase, // removed in favor of userURLs
-    user: users[req.cookies["user"]],
+    user: users[req.session.user_id],
     userURLs: userURLs,
   };
   // console.log("userURLs", templateVars.userURLs);
@@ -105,17 +115,17 @@ app.post("/urls", (req, res) => {
   const newShortURL = generateRandomString();
   urlDatabase[newShortURL] = {
     longURL: req.body.longURL,
-    user_id: users[req.cookies["user"]].user_id,
+    user_id: users[req.session.user_id].user_id,
   };
   // console.log(urlDatabase);
   res.redirect(`/urls/${newShortURL}`);
 });
 
 app.get("/urls/new", (req, res) => {
-  if (!users[req.cookies["user"]]) {
+  if (!users[req.session.user_id]) {
     res.redirect("/login");
   }
-  const templateVars = { user: users[req.cookies["user"]] };
+  const templateVars = { user: users[req.session.user_id] };
   res.render("urls_new", templateVars);
 });
 
@@ -123,7 +133,7 @@ app.get("/urls/:shortURL", (req, res) => {
   //only load if there if shortURL exists in urlDatabase
   if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
     const templateVars = {
-      user: users[req.cookies["user"]],
+      user: users[req.session.user_id],
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL].longURL,
       urls: urlDatabase,
@@ -140,8 +150,12 @@ app.post("/urls/:shortURL/", (req, res) => {
   for (url in urlDatabase) {
     // console.log("url,,", urlDatabase[url].user_id);
     // console.log("req.cookies", req.cookies["user"]);
-    if (urlDatabase[req.params.shortURL].user_id === req.cookies["user"]) {
+    if (urlDatabase[req.params.shortURL].user_id === req.session.user_id) {
       urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+      console.log(
+        "req.session.user_id: THE COOKIE DECRYPTS WHEN ITS RETURNED",
+        req.session.user_id
+      );
       res.redirect(`/urls/${req.params.shortURL}`);
     }
   }
@@ -180,7 +194,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/register", (req, res) => {
   const templateVars = {
-    user: users[req.cookies["user"]],
+    user: users[req.session.user_id],
     // shortURL: req.params.shortURL,
   };
 
@@ -191,7 +205,7 @@ app.post("/register", (req, res) => {
   if (!req.body.firstName || !req.body.email || !req.body.password) {
     res.sendStatus(400).send("All input fields required");
   }
-  if (checkIfEmailExists(req.body.email)) {
+  if (getUserByEmail(req.body.email, users)) {
     res.send(
       "400 Email has already been previously registered with another account"
     );
@@ -205,7 +219,8 @@ app.post("/register", (req, res) => {
     password: hashedPassword,
   };
   console.log(users);
-  res.cookie("user", user_id);
+  // res.cookie("user", user_id);
+  req.session.user_id = user_id;
   res.redirect("/urls");
 });
 
@@ -214,29 +229,39 @@ app.post("/register", (req, res) => {
 app.get("/login", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    user: users[req.cookies["user"]],
+    user: users[req.session.user_id],
   };
   res.render("login", templateVars);
 });
 
 app.post("/login", (req, res) => {
   // console.log(req.body.email);
-  let user_id = checkIfEmailExists(req.body.email);
-  let hashedPassword = bcrypt.hashSync(req.body.password, salt);
+  let user_id = getUserByEmail(req.body.email, users);
+  // let hashedPassword = bcrypt.hashSync(req.body.password, salt);
   // console.log("req.body.password,", req.body.password);
   // console.log("user.password,", user_id.password);
-  if (bcrypt.hashSync("users[user_id].password", hashedPassword)) {
+
+  console.log("user_io,", user_id);
+  console.log("req.body.password", req.body.password);
+  console.log("users[user_id].password,", users[user_id].password);
+  // console.log("hashedPassword,", hashedPassword);
+
+  // console.log(users[user_id].password, hashedPassword);
+  //plaintext left, hashed right.
+  if (bcrypt.compareSync(req.body.password, users[user_id].password)) {
     // console.log("user:", user);
-    res.cookie("user", user_id);
-  } else if (!checkIfEmailExists(req.body.email)) {
+    // res.cookie("user", user_id);
+    console.log("THIS IF IS ENTERING");
+    req.session.user_id = user_id;
+    res.redirect(`/urls`);
+  } else if (!getUserByEmail(req.body.email, users)) {
     res.send("403 Email is not found");
   }
-  // res.cookie("user", req.body.user);
-  res.redirect(`/urls`);
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user");
+  // res.clearCookie("user");
+  req.session.user_id = null;
   res.redirect(`/urls`);
 });
 
@@ -245,7 +270,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   for (url in urlDatabase) {
     // console.log("url,,", urlDatabase[url].user_id);
     // console.log("req.cookies", req.cookies["user"]);
-    if (urlDatabase[url].user_id === req.cookies["user"]) {
+    if (urlDatabase[url].user_id === req.session.user_id) {
       delete urlDatabase[req.params.shortURL];
       res.redirect("/urls");
     }
