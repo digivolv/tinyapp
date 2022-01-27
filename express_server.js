@@ -236,7 +236,7 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
   // console.log(req.body.email);
-  let user_id = getUserByEmail(req.body.email, users);
+  let user_id = getUserByEmail(req.body.email, users).user_id;
   // let hashedPassword = bcrypt.hashSync(req.body.password, salt);
   // console.log("req.body.password,", req.body.password);
   // console.log("user.password,", user_id.password);

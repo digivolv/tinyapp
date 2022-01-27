@@ -2,10 +2,10 @@
 const getUserByEmail = function (email, database) {
   for (const user in database) {
     if (email === database[user].email) {
-      return user;
+      return database[user];
     }
   }
-  return null;
+  return undefined;
 };
 //generates random string for user_id creation
 const generateRandomString = function () {
