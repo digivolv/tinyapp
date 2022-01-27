@@ -1,40 +1,15 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-// const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
-// const users = require("./data/users.json");
 const urlDatabase = require("./data/urlDatabase.json");
 const morgan = require("morgan");
 const bcrypt = require("bcryptjs");
 const salt = bcrypt.genSaltSync(10);
 const { getUserByEmail, generateRandomString } = require("./helpers");
-// const getUserByEmail = require("./helpers");
-// const generateRandomString = require("./helpers");
-
-// const hashedPassword = brypt.hashSync(password, salt);
-
-// //returns user ID if email exists
-// const getUserByEmail = function (email, database) {
-//   for (const user in users) {
-//     if (email === database[user].email) {
-//       return user;
-//     }
-//   }
-//   return null;
-// };
-// //generates random string for user_id creation
-// const generateRandomString = function () {
-//   let result = "";
-//   let characters =
-//     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-//   for (let i = 0; i < 6; i++) {
-//     result += characters.charAt(Math.floor(Math.random() * characters.length));
-//   }
-//   return result;
-// };
-
-const PORT = 8888;
+// const users = require("./data/users.json");
+// const cookieParser = require("cookie-parser");
+//./node_modules/.bin/nodemon -L express_server.js//
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("tiny"));
@@ -47,9 +22,9 @@ app.use(
     ],
   })
 );
-//./node_modules/.bin/nodemon -L express_server.js//
 // app.use(cookieParser());
 app.set("view engine", "ejs");
+const PORT = 8889;
 
 const users = {
   userRandomID: {
@@ -68,21 +43,6 @@ const users = {
     password: bcrypt.hashSync("123", salt),
   },
 };
-
-//ROUTE DEFINITIONS
-
-// const users = {
-//   userRandomID: {
-//     id: "userRandomID",
-//     email: "user@example.com",
-//     password: "purple-monkey-dinosaur",
-//   },
-//   user2RandomID: {
-//     id: "user2RandomID",
-//     email: "user2@example.com",
-//     password: "dishwasher-funk",
-//   },
-// };
 
 function urlsForUser(id) {
   let resultURLs = {};
@@ -105,13 +65,9 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   let userURLs = urlsForUser(req.session.user_id);
   const templateVars = {
-    // urls: urlDatabase, // removed in favor of userURLs
     user: users[req.session.user_id],
     userURLs: userURLs,
   };
-  // console.log("userURLs", templateVars.userURLs);
-  // console.log(userURLs);
-  // console.log("(templateVars.urls", templateVars.urls);
   res.render("urls_index", templateVars);
 });
 
@@ -121,22 +77,18 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     user_id: users[req.session.user_id].user_id,
   };
-  // console.log(urlDatabase);
   res.redirect(`/urls/${newShortURL}`);
 });
 
 app.get("/urls/new", (req, res) => {
   if (!users[req.session.user_id]) {
     res.redirect("/login");
-    // res.send("403: Must be logged in to create shortened links!");
   }
   const templateVars = { user: users[req.session.user_id] };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  //only load if there if shortURL exists in urlDatabase
-
   if (
     urlDatabase.hasOwnProperty(req.params.shortURL) &&
     req.session.user_id === urlDatabase[req.params.shortURL].user_id
@@ -156,11 +108,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/", (req, res) => {
-  // console.log(urlDatabase[req.params.shortURL]);
-  // console.log("req.body: ", req.body);
   for (url in urlDatabase) {
-    // console.log("url,,", urlDatabase[url].user_id);
-    // console.log("req.cookies", req.cookies["user"]);
     if (urlDatabase[req.params.shortURL].user_id === req.session.user_id) {
       urlDatabase[req.params.shortURL].longURL = req.body.longURL;
       console.log(
@@ -174,25 +122,6 @@ app.post("/urls/:shortURL/", (req, res) => {
     "403 Error, you do not possess authority to edit this! Please login and try again"
   );
 });
-
-// app.get("/u/:shortURL", (req, res) => {
-//   const longURL = urlDatabase[req.params.shortURL].longURL;
-
-//   const templateVars = {
-//     urls: urlDatabase, // removed in favor of userURLs
-//     user: users[req.cookies["user"]],
-//     shortURL: req.params.shortURL,
-//     longURL: longURL,
-//   };
-
-//   //if no corresponding shortURL to longURL throw error
-
-//   //************************* not sure if needed */
-//   if (!longURL) {
-//     res.send("400: Key not found!");
-//   }
-//   res.render("urls_show", templateVars);
-// });
 
 app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
@@ -210,7 +139,6 @@ app.get("/register", (req, res) => {
 
   const templateVars = {
     user: users[req.session.user_id],
-    // shortURL: req.params.shortURL,
   };
 
   res.render("register", templateVars);
@@ -239,8 +167,6 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
-//Update your express server so that when it receives a POST request to /urls
-// it responds with a redirection to /urls/:shortURL, where shortURL is the random string we generated.
 app.get("/login", (req, res) => {
   if (req.session.user_id) {
     res.redirect("/urls");
@@ -279,8 +205,6 @@ app.post("/logout", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   //search url database to make sure it matches person logged in (cookie)
   for (url in urlDatabase) {
-    // console.log("url,,", urlDatabase[url].user_id);
-    // console.log("req.cookies", req.cookies["user"]);
     if (urlDatabase[url].user_id === req.session.user_id) {
       delete urlDatabase[req.params.shortURL];
       res.redirect("/urls");

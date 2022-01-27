@@ -23,23 +23,19 @@
     <% if (!user) { %>
     <form class="form-inline" action="/login" method="GET">
       <div class="navbar">
-      <a class="nav-item nav-link" >Login for full access =></a>
-      <!-- <input
-      id="username"
-      name="username"
-      placeholder="username"
-      /> -->
-      <button type="submit" class="btn btn-light">Login</button>
+      <button type="submit" class="btn btn-outline-light">Login</button>
     </form>
     <form class="form-inline" action="/register" method="GET">
       <div class="navbar">
-      <button type="submit" class="btn btn-light">Register</button>
+      <button type="submit" class="btn btn-outline-light">Register</button>
     </form>
   <% } else { %>
     <form class="form-inline" action="/logout" method="POST">
-      <label for="logout"><p>Logged in as: <strong><%= user.email %></strong></p></label>
-      <div class="navbar">
-      <button type="submit" class="btn btn-primary">Log out</button>
+      <div class="navbar-nav">
+        <label for="logout"><small>Logged in as: <strong><%= user.email %></small></strong></label>
+
+        <button type="submit" class="btn btn-outline-light">Log out</button>
+      </div>
     </form>
 <% } %>
   </nav>

@@ -18,9 +18,10 @@
   </head>
   <body>
     <header><%- include('partials/_header') %></header>
-    <h1>Create account</h1>
-    <form action="/register" method="POST">
-      <div class="form-group mb-2">
+
+    <h2>Create account</h2>
+    <form class="form-group" action="/register" method="POST">
+      <div class="form-group">
         <label for="firstName">First Name</label>
         <input
           id="firstName"
@@ -31,15 +32,18 @@
           style="width: 300px; margin: 1em"
         />
       </div>
-      <!-- <div>
+      <div class="form-group">
         <label for="lastName">Last Name</label>
-        <input id="lastName" name="lastName" type="text" required />
-      </div> -->
-      <!-- <div>
-        <label for="Username">Username</label>
-        <input id="Username" name="Username" type="text" required />
-      </div> -->
-      <div>
+        <input
+          id="lastName"
+          name="lastName"
+          type="text"
+          class="form-control"
+          placeholder="Enter last name"
+          style="width: 300px; margin: 1em"
+        />
+      </div>
+      <div class="form-group">
         <label for="email">Email</label>
         <input
           id="email"
@@ -50,7 +54,7 @@
           style="width: 300px; margin: 1em"
         />
       </div>
-      <div>
+      <div class="form-group">
         <label for="password">Password</label>
         <input
           id="password"

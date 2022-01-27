@@ -23,6 +23,15 @@
       <table class="table">
         <thead>
           <tr>
+            <% if (!user) { %>
+            <div class="alert alert-warning" role="alert">
+                <label for="longURL"
+                  >Please <a href ="/login/">login</a> or <a href ="/register/">register</a> now to access your collection of URLs and access full functionality of TinyApp!</label>
+                  <% } %>
+            </div>
+            </div>
+          </tr>
+          <tr>
             <th scope="col">Short URL</th>
             <th scope="col">Long URL</th>
             <th scope="col">Edit</th>
@@ -36,41 +45,22 @@
             <td><a href="/urls/<%= url %>"><%= url %></a></td>
             <td>
               <a href="<%= userURLs[url].longURL %>"
-                ><%= userURLs[url].longURL %></a
-              >
+                ><%= userURLs[url].longURL %></a>
             </td>
             <td>
               <form method="GET" action="/urls/<%= url %>">
-                <button type="submit" class="btn btn-primary">Edit</button>
+                <button type="submit" class="btn btn-outline-primary">Edit</button>
               </form>
             </td>
             <td>
               <form method="POST" action="/urls/<%= url %>/delete">
-                <button type="submit" class="btn btn-danger">Delete</button>
+                <button type="submit" class="btn btn-outline-danger">Delete</button>
               </form>
             </td>
           </tr>
-          <% } %> <% if (!user) { %>
-          <td>
-            <form class="form-inline" action="/login" method="GET">
-              <div>
-                <label for="longURL"
-                  >Login or Register now to access full functionality</label
-                >
-                <button type="submit" class="btn btn-success">Login</button>
-              </div>
-            </form>
-            <form method="GET" action="/register">
-              <div>
-                <button type="submit" class="btn btn-success">
-                  Register now to access full functionality!
-                </button>
-              </div>
-            </form>
-          </td>
-
           <% } %>
         </tbody>
+        
       </table>
     </main>
     <!-- Bootstrap JS -->
