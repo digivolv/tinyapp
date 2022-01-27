@@ -126,15 +126,32 @@ app.post("/urls/:shortURL/", (req, res) => {
   );
 });
 
-app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  //if no corresponding shortURL to longURL throw error
+// app.get("/u/:shortURL", (req, res) => {
+//   const longURL = urlDatabase[req.params.shortURL].longURL;
 
-  //************************* not sure if needed */
-  if (!longURL) {
-    res.send("400: Key not found!");
+//   const templateVars = {
+//     urls: urlDatabase, // removed in favor of userURLs
+//     user: users[req.cookies["user"]],
+//     shortURL: req.params.shortURL,
+//     longURL: longURL,
+//   };
+
+//   //if no corresponding shortURL to longURL throw error
+
+//   //************************* not sure if needed */
+//   if (!longURL) {
+//     res.send("400: Key not found!");
+//   }
+//   res.render("urls_show", templateVars);
+// });
+
+app.get("/u/:shortURL", (req, res) => {
+  if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
+    const longURL = urlDatabase[req.params.shortURL].longURL;
+    res.redirect(longURL);
+  } else {
+    return res.status(403).send("Short URL is not found within database");
   }
-  res.render("urls_show");
 });
 
 app.get("/register", (req, res) => {
