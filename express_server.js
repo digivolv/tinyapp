@@ -95,7 +95,11 @@ function urlsForUser(id) {
 }
 
 app.get("/", (req, res) => {
-  res.redirect("/urls/");
+  if (req.session.user_id) {
+    res.redirect("/urls/");
+  } else {
+    res.redirect("/login/");
+  }
 });
 
 app.get("/urls", (req, res) => {
@@ -124,6 +128,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   if (!users[req.session.user_id]) {
     res.redirect("/login");
+    // res.send("403: Must be logged in to create shortened links!");
   }
   const templateVars = { user: users[req.session.user_id] };
   res.render("urls_new", templateVars);
@@ -131,7 +136,11 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   //only load if there if shortURL exists in urlDatabase
-  if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
+
+  if (
+    urlDatabase.hasOwnProperty(req.params.shortURL) &&
+    req.session.user_id === urlDatabase[req.params.shortURL].user_id
+  ) {
     const templateVars = {
       user: users[req.session.user_id],
       shortURL: req.params.shortURL,
@@ -140,7 +149,9 @@ app.get("/urls/:shortURL", (req, res) => {
     };
     res.render("urls_show", templateVars);
   } else {
-    res.send("400: Invalid file path! Not a valid shortURL ");
+    res.send(
+      "400: Invalid file path! Not a valid shortURL or you are unauthorized to view this page!"
+    );
   }
 });
 
@@ -188,11 +199,15 @@ app.get("/u/:shortURL", (req, res) => {
     const longURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(longURL);
   } else {
-    return res.status(403).send("Short URL is not found within database");
+    return res.status(403).send("403 Short URL is not found within database");
   }
 });
 
 app.get("/register", (req, res) => {
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  }
+
   const templateVars = {
     user: users[req.session.user_id],
     // shortURL: req.params.shortURL,
@@ -203,7 +218,7 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
   if (!req.body.firstName || !req.body.email || !req.body.password) {
-    res.sendStatus(400).send("All input fields required");
+    res.send("400 All input fields required");
   }
   if (getUserByEmail(req.body.email, users)) {
     res.send(
@@ -227,6 +242,10 @@ app.post("/register", (req, res) => {
 //Update your express server so that when it receives a POST request to /urls
 // it responds with a redirection to /urls/:shortURL, where shortURL is the random string we generated.
 app.get("/login", (req, res) => {
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  }
+
   const templateVars = {
     urls: urlDatabase,
     user: users[req.session.user_id],
@@ -235,27 +254,19 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  // console.log(req.body.email);
-  let user_id = getUserByEmail(req.body.email, users).user_id;
-  // let hashedPassword = bcrypt.hashSync(req.body.password, salt);
-  // console.log("req.body.password,", req.body.password);
-  // console.log("user.password,", user_id.password);
+  //if email exists
+  if (getUserByEmail(req.body.email, users)) {
+    let user_id = getUserByEmail(req.body.email, users).user_id;
 
-  console.log("user_io,", user_id);
-  console.log("req.body.password", req.body.password);
-  console.log("users[user_id].password,", users[user_id].password);
-  // console.log("hashedPassword,", hashedPassword);
-
-  // console.log(users[user_id].password, hashedPassword);
-  //plaintext left, hashed right.
-  if (bcrypt.compareSync(req.body.password, users[user_id].password)) {
-    // console.log("user:", user);
-    // res.cookie("user", user_id);
-    console.log("THIS IF IS ENTERING");
-    req.session.user_id = user_id;
-    res.redirect(`/urls`);
-  } else if (!getUserByEmail(req.body.email, users)) {
-    res.send("403 Email is not found");
+    //if passwords match
+    if (bcrypt.compareSync(req.body.password, users[user_id].password)) {
+      req.session.user_id = user_id;
+      res.redirect(`/urls`);
+    } else {
+      res.send("403 Email and password combination not found");
+    }
+  } else {
+    res.send("403 Email and password combination not found");
   }
 });
 
@@ -275,9 +286,11 @@ app.post("/urls/:shortURL/delete", (req, res) => {
       res.redirect("/urls");
     }
   }
-  res.send(
-    "403 Error, you do not possess authority to delete this! Please login and try again"
-  );
+  return res
+    .sendStatus(403)
+    .send(
+      "403 Error, you do not possess authority to delete this! Please login and try again"
+    );
 });
 
 // app.get("/urls.json", (req, res) => {
