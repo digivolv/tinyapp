@@ -4,15 +4,15 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["Main page without an active user"](#)
+!["Main page without an active user"](https://github.com/digivolv/tinyapp/blob/master/data/main-page-no-user.PNG?raw=true)
 
-!["Main page with an active user, displaying created links"](#)
+!["Main page with an active user, displaying created links"](https://github.com/digivolv/tinyapp/blob/master/data/main-page-active-user.PNG?raw=true)
 
-!["Registration page"](#)
+!["Registration"](https://github.com/digivolv/tinyapp/blob/master/data/registration.PNG?raw=true)
 
 !["Specific short URL page where user owns the short URL"](#)
 
-!["Specific short URL page when there is no active user"](#)
+!["Creating a TinyURL"](https://github.com/digivolv/tinyapp/blob/master/data/new-url.PNG?raw=true)
 
 ## Dependencies
 
