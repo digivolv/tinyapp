@@ -24,7 +24,7 @@ app.use(
 );
 // app.use(cookieParser());
 app.set("view engine", "ejs");
-const PORT = 8889;
+const PORT = 8080;
 
 const users = {
   userRandomID: {
@@ -55,6 +55,7 @@ function urlsForUser(id) {
 }
 
 app.get("/", (req, res) => {
+  console.log("this is entering");
   if (req.session.user_id) {
     res.redirect("/urls/");
   } else {
@@ -170,13 +171,13 @@ app.post("/register", (req, res) => {
 app.get("/login", (req, res) => {
   if (req.session.user_id) {
     res.redirect("/urls");
+  } else {
+    const templateVars = {
+      urls: urlDatabase,
+      user: users[req.session.user_id],
+    };
+    res.render("login", templateVars);
   }
-
-  const templateVars = {
-    urls: urlDatabase,
-    user: users[req.session.user_id],
-  };
-  res.render("login", templateVars);
 });
 
 app.post("/login", (req, res) => {
