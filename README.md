@@ -14,15 +14,6 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 !["Creating a TinyURL"](https://github.com/digivolv/tinyapp/blob/master/data/new-url.PNG?raw=true)
 
-## Dependencies
-
-- Node.js
-- Express
-- EJS
-- bcrypt
-- body-parser
-- cookie-session
-
 ## Getting Started
 
 - Install all dependencies (using the `npm install` command).
@@ -155,3 +146,13 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
   - deletes cookie
   - redirects to `/urls`
+
+
+## Dependencies
+
+- Node.js
+- Express
+- EJS
+- bcrypt
+- body-parser
+- cookie-session
